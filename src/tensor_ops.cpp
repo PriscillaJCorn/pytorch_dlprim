@@ -191,6 +191,16 @@ using c10::DeviceType;
         return ptdlprim::_copy_from(self,dst,false);
     }
 
+    // { "schema": "aten::_has_compatible_shallow_copy_type(Tensor self, Tensor from) -> bool"}
+    bool _has_compatible_shallow_copy_type(const at::Tensor & self, const at::Tensor & from) {
+        c10::DispatchKeySet self_keyset = self.key_set();
+        c10::DispatchKeySet from_keyset = from.key_set();
+        auto is_dense = [](c10::DispatchKeySet ks) {
+            return ks.has(c10::DispatchKey::CPU) || ks.has(c10::DispatchKey::PrivateUse1);
+        };
+        return (self_keyset == from_keyset) || (is_dense(self_keyset) && is_dense(from_keyset));
+    }
+
     Tensor &fill_(Tensor &self, const c10::Scalar &value)
     {
         GUARD;
@@ -436,6 +446,11 @@ TORCH_LIBRARY_IMPL(aten, PrivateUse1, m) {
       m.impl("aten::masked_select",&ptdlprim::masked_select);
       m.impl("aten::resize_",&ptdlprim::resize_);
 }
+
+TORCH_LIBRARY_IMPL(aten, AutogradPrivateUse1, m) {
+      m.impl("aten::_has_compatible_shallow_copy_type",&ptdlprim::_has_compatible_shallow_copy_type);
+}
+
 TORCH_LIBRARY_IMPL(_, PrivateUse1, m) {
       m.fallback(torch::CppFunction::makeFromBoxedFunction<&ptdlprim::fallback>());
 }

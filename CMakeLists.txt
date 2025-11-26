@@ -33,7 +33,7 @@ add_library(pt_ocl SHARED
         src/registeration.cpp
         src/CLTensor.cpp
         src/guard.cpp
-        src/python_iface.cpp
+        # src/python_iface.cpp
         )
 
 target_compile_features(pt_ocl PRIVATE cxx_std_17)
@@ -67,3 +67,5 @@ install(TARGETS pt_ocl
 		RUNTIME DESTINATION python/pytorch_ocl
 	)
 
+
+add_subdirectory(examples/cplus)
